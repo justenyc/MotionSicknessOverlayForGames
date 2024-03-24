@@ -1,0 +1,1 @@
+{"radius": 243, "offsetx": 0, "offsety": 0, "sensitivity": 1, "fade_speed": 1, "control_type": "Gamepad"}
