@@ -36,18 +36,19 @@ class App(Frame):
         App.screenData["alpha"] = 1
 
     def draw_circle(self, x, y, radius, draw_canvas):
+        #print("Circle drawn at position: (x: {0}, y: {1}, radius: {2})".format(x,y,radius))
         draw_canvas.create_oval(
             x - radius,
             y - radius,
             x + radius,
             y + radius,
-            width = 3,
+            width = 0,
             fill="#add123"
         )
     
     def init_canvas(self, root):
-        rootCanvas = Canvas(root, bg="black")
-        rootCanvas.pack(fill=BOTH, expand=True)
+        rootCanvas = Canvas(root, bg="black", width=App.screenData["screen_width"], height=App.screenData["screen_height"])
+        rootCanvas.pack()
         return rootCanvas
 
     def apply_app_alpha(self, newAlpha, overlay_window):
@@ -55,12 +56,22 @@ class App(Frame):
             if App.savedSettings["control_type"] == "Mouse & Keyboard":
                 time.sleep(1/60)
             newAlpha = overlay_window.attributes('-alpha') - 1/60
+        newAlpha = max(min(newAlpha, 0.9), 0)
         overlay_window.attributes('-alpha', newAlpha)
 
 def begin():
+    root = Tk()
+    app = App(root)
+    app.init_root(root)
+    mainCanvas = app.init_canvas(root)
+    #setClickthrough(mainCanvas.winfo_id())
+    control_type = app.savedSettings["control_type"]
+
     try:
-        foundGamepad = InputManager.get_gamepad()
-    except:
+        if control_type != "Mouse & Keyboard":
+            foundGamepad = InputManager.get_gamepad()
+    except Exception as e:
+        print(e)
         notification = Tk()
         notification.configure(background=c.BG_COLOUR)
         label = gh.create_label(notification, "Control Type is set to Gamepad, but no gamepad was found")
@@ -69,11 +80,6 @@ def begin():
         button_close.pack()
         return
 
-    root = Tk()
-    app = App(root)
-    app.init_root(root)
-    mainCanvas = app.init_canvas(root)
-
     app.draw_circle(
         App.screenData["screen_center"][0] + App.savedSettings["offsetx"], 
         App.screenData["screen_center"][1] - App.savedSettings["offsety"], 
@@ -81,13 +87,20 @@ def begin():
         mainCanvas)
 
     InputManager.attach_listeners()
-    control_type = app.savedSettings["control_type"]
 
     while True:
         #time.sleep(1/60)
         if control_type == "Mouse & Keyboard":
+            #mainCanvas.delete("all")
             InputManager.update_mouse_position()
-            app.apply_app_alpha(InputManager.mouseMagnitude, root)            
+            InputManager.force_mouse_position(App.screenData["screen_center"][0], App.screenData["screen_center"][1])
+            app.apply_app_alpha(InputManager.mouseMagnitude, root)
+            #app.draw_circle(InputManager.currentVector[0]/2, InputManager.currentVector[1]/2, 100, mainCanvas)
+            #app.draw_circle(
+            #    App.screenData["screen_center"][0] + App.savedSettings["offsetx"], 
+            #    App.screenData["screen_center"][1] - App.savedSettings["offsety"], 
+            #    App.savedSettings["radius"], 
+            #    mainCanvas)
         else:
             InputManager.gamepad_input()
             #print(InputManager.gamepadMagnitude)

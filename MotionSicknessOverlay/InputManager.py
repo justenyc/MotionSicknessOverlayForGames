@@ -25,6 +25,10 @@ def on_release(key):
         mouseListener.stop()
         return False
 
+def force_mouse_position(x, y):
+    mouse.position = (x, y)
+    return
+
 def calculate_delta(target, root):
     global mouseMagnitude
     delta = (target[0] - root[0], target[1] - root[1])
@@ -61,6 +65,7 @@ def gamepad_input():
     except Exception as e:
         print(e)
 
+mouse = pynput.mouse.Controller()
 lastVector = (0,0)
 currentVector = (0,0)
 mouseMagnitude = 0
